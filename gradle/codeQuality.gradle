@@ -1,0 +1,121 @@
+import java.nio.charset.StandardCharsets
+
+//Count lines of code :-) : https://github.com/aalmiray/stats-gradle-plugin
+apply plugin: 'org.kordamp.gradle.stats' //gradle stats
+
+//Java bytecode static analyzer tool based on Procyon Compiler Tools aimed to supersede the FindBugs
+//https://github.com/amaembo/huntbugs
+//https://github.com/lavcraft/huntbugs-gradle-plugin
+apply plugin: 'one.util.huntbugs' //huntbugs
+
+apply plugin: 'findbugs'
+
+//Code Coverage Library
+apply plugin: 'jacoco'
+
+//Performs quality checks on your project's Java source
+apply plugin: 'checkstyle'
+
+apply plugin: 'java'
+
+//PMD plugin performs quality checks on your project's Java source files
+//https://pmd.github.io/
+apply plugin: 'pmd'//pmd
+
+configurations {
+  checkstyleConfig
+}
+
+dependencies {
+  checkstyleConfig gradlePlugins.checkstyle
+}
+
+tasks.withType(JavaCompile) {
+  options.encoding = StandardCharsets.UTF_8
+  //Enable all javac warnings
+  //http://www.javaworld.com/article/2073587/javac-s--xlint-options.html
+  options.compilerArgs << '-Xlint:all'
+}
+
+javadoc.options.links(
+        'http://docs.oracle.com/javase/8/docs/api/',
+        'http://typesafehub.github.com/config/latest/api/',
+        "http://google.github.io/guava/releases/${versions.guava}/api/docs/")
+
+
+checkstyle {
+  showViolations = true
+  toolVersion = pluginVersions.checkstyle
+  config = resources.text.fromArchiveEntry(configurations.checkstyleConfig, 'google_checks.xml')
+}
+
+pmd {
+  ruleSets = []
+  toolVersion = pluginVersions.pmd
+  ruleSetConfig = resources.text.fromFile(file("${rootDir}/config/pmd/rulesSets.xml"))
+}
+
+findbugs {
+  effort = 'max'
+//  excludeFilter = file("${rootDir}/config/findbugs/exclude.xml")
+}
+
+jacoco {
+  toolVersion = '0.7.8-SNAPSHOT'
+}
+
+jacocoTestReport {
+  group = 'Coverage reports'
+  description = 'Generates a test coverage report for a project'
+
+  reports {
+    xml.enabled = true
+    html.enabled = true
+  }
+}
+
+tasks.withType(Test) {
+
+  testLogging {
+    events 'skipped', 'failed'
+    exceptionFormat 'full'
+    showCauses = true
+    showExceptions = true
+    showStackTraces = true
+  }
+
+  jacoco {
+    append = true
+    classDumpFile = file("${rootDir}/build/jacoco/classpathdumps")
+    destinationFile = file("${rootDir}/build/jacoco/jacocoTest.exec")
+  }
+}
+
+tasks.withType(Checkstyle) {
+  enabled = System.properties.containsKey('checkstyle')
+  group = 'Checkstyle'
+  reports {
+    xml.enabled = false
+    html.enabled = true
+  }
+}
+
+tasks.withType(FindBugs) {
+  enabled = System.properties.containsKey('findbugs')
+  group = 'Findbugs'
+  reports {
+    xml.enabled = false
+    html.enabled = true
+  }
+}
+
+tasks.withType(Pmd) {
+  enabled = name.endsWith('Main') && System.properties.containsKey('pmd')
+  group = 'PMD'
+  reports {
+    xml.enabled = false
+    html.enabled = true
+  }
+}
+
+

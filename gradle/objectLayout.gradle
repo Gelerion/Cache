@@ -1,0 +1,10 @@
+/**
+ * Java object layout: http://openjdk.java.net/projects/code-tools/jol
+ */
+configurations {
+    objectLayout
+}
+
+dependencies {
+    objectLayout benchmarkLibraries.javaObjectLayout
+}

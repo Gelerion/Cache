@@ -1,0 +1,56 @@
+buildscript {
+    apply from: "${rootDir}/gradle/dependencies.gradle"
+
+    repositories {
+        maven { url "https://plugins.gradle.org/m2/" }
+        mavenCentral()
+        jcenter()
+    }
+
+    dependencies {
+        classpath gradlePlugins.values()
+    }
+}
+
+//so that I can use 'compile' configuration
+apply plugin: 'java'
+
+//Static analyzer:          https://github.com/mjdetullio/gradle-coverity-plugin
+apply plugin: "com.github.mjdetullio.gradle.coverity" // assemble covCommitDefects
+
+//New jar versions checker: https://github.com/ben-manes/gradle-versions-plugin
+apply plugin: 'com.github.ben-manes.versions'         //dependencyUpdates -Drevision=release -DoutputFormatter=json,xml
+
+//Code coverage library with Travis or Jenkins
+apply plugin: 'com.github.kt3k.coveralls'
+apply plugin: 'jacoco'
+
+task testReport(type: TestReport, group: 'Build') {
+    description = 'Generates an aggregate test report'
+    destinationDir = file("${buildDir}/reports/allTests")
+}
+
+allprojects {
+    repositories {
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+        maven { url 'https://jitpack.io' }
+        mavenCentral()
+        jcenter()
+    }
+}
+
+subprojects {
+    apply plugin: 'com.github.ethankhall.semantic-versioning'
+
+    //Compile error analyzer
+    apply plugin: 'net.ltgt.errorprone' //http://errorprone.info/bugpatterns
+
+    apply from: "${rootDir}/gradle/dependencies.gradle"
+    apply from: "${rootDir}/gradle/codeQuality.gradle"
+    apply from: "${rootDir}/gradle/objectLayout.gradle"
+
+    sourceCompatibility = JavaVersion.VERSION_1_8
+
+    group = 'com.denis.cache'
+}
+

@@ -1,0 +1,48 @@
+ext {
+    versions = [
+            guava: '20.0',
+            errorProneAnnotations: '2.0.14'
+    ]
+
+    libraries = [
+            errorProneAnnotations: '2.0.14'
+    ]
+
+    benchmarkVersions = [
+            javaObjectLayout: '0.6',
+    ]
+
+    benchmarkLibraries = [
+            javaObjectLayout: "org.openjdk.jol:jol-cli:${benchmarkVersions.javaObjectLayout}"
+
+    ]
+
+    pluginVersions = [
+            checkstyle: '7.3',
+            coverity: '1.0.10',
+            coveralls: '2.7.1',
+            versions: '0.13.0',
+            semanticVersioning: '1.1.0',
+            stats: '0.2.0',
+            huntbugsCore: '0.0.11',
+            huntbugsPlugin: '0.3.5',
+            pmd: '5.5.1',
+            errorProne: '0.0.8',
+    ]
+
+    gradlePlugins = [
+        coverity: "gradle.plugin.com.github.mjdetullio.gradle:coverity-plugin:${pluginVersions.coverity}",
+        benManesVersions: "com.github.ben-manes:gradle-versions-plugin:${pluginVersions.versions}",
+        coveralls: "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${pluginVersions.coveralls}",
+        semantic_versioning: "io.ehdev:gradle-semantic-versioning:${pluginVersions.semanticVersioning}",
+        stats: "org.kordamp.gradle:stats-gradle-plugin:${pluginVersions.stats}",
+        huntbugs: [
+                "one.util:huntbugs:${pluginVersions.huntbugsCore}",
+                "gradle.plugin.one.util.huntbugs:huntbugs-gradle-plugin:${pluginVersions.huntbugsPlugin}",
+        ],
+        checkstyle: dependencies.create("com.puppycrawl.tools:checkstyle:${pluginVersions.checkstyle}") {
+            transitive = false
+        },
+        errorProne: "net.ltgt.gradle:gradle-errorprone-plugin:${pluginVersions.errorProne}",
+    ]
+}
